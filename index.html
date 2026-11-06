@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuarto Seguro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fondo:#f4f4f1; --tarjeta:#ffffff; --borde:#e3e3df; --texto:#111111; --gris:#6b6b68; --suave:#efefec; --negro:#111111;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--fondo);color:var(--texto);min-height:100vh;padding:28px 18px 48px}
+  .contenedor{max-width:480px;margin:0 auto}
+  button{font-family:inherit}
+
+  /* Encabezado */
+  header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}
+  .marca{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin-bottom:6px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .reloj{font-size:30px;font-weight:300;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+
+  .conexion{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--borde);background:var(--tarjeta);margin-bottom:18px;color:var(--gris)}
+  .conexion .punto{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--gris)}
+  .conexion.ok{color:var(--texto)}
+  .conexion.ok .punto{background:var(--negro);border-color:var(--negro)}
+
+  /* Alarma */
+  .banner-alarma{display:none;background:var(--negro);color:#fff;border-radius:22px;padding:22px;margin-bottom:14px;animation:titila 1.2s infinite}
+  .banner-alarma .t{font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-bottom:6px;font-weight:600}
+  .banner-alarma .g{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+  .banner-alarma button{background:#fff;color:var(--negro);border:0;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer}
+  @keyframes titila{50%{opacity:.82}}
+
+  /* Tarjetas */
+  .grilla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:22px;padding:18px;display:flex;flex-direction:column}
+  .tarjeta.ancha{grid-column:1/-1}
+  .etiqueta{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin-bottom:10px}
+  .valor{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+  .detalle{font-size:13px;color:var(--gris);min-height:18px;margin-bottom:16px}
+  .boton{margin-top:auto;width:100%;border:1.5px solid var(--negro);border-radius:14px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;background:var(--negro);color:#fff;transition:transform .1s}
+  .boton.claro{background:transparent;color:var(--negro)}
+  .boton:active{transform:scale(.97)}
+
+  .socorro{background:var(--negro);border-color:var(--negro);color:#fff;cursor:pointer;user-select:none;padding:24px 20px;text-align:left}
+  .socorro .etiqueta{color:#a3a3a0}
+  .socorro .grande{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:8px}
+  .socorro .detalle{color:#c9c9c6;margin-bottom:0}
+  .socorro:active{transform:scale(.99)}
+
+  .separador{height:1px;background:var(--borde);margin:18px 0 16px}
+  .fila{display:flex;gap:10px;margin-bottom:14px}
+  .fila label{flex:1;font-size:12px;color:var(--gris);font-weight:500}
+  .fila input[type=time]{width:100%;margin-top:6px;background:var(--suave);color:var(--texto);border:1px solid transparent;border-radius:12px;padding:11px;font-size:16px;font-family:inherit}
+  .fila input[type=time]:focus{outline:none;border-color:var(--negro)}
+  .interruptor{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:14px;font-weight:600}
+  .switch{position:relative;width:50px;height:30px;flex-shrink:0}
+  .switch input{opacity:0;width:0;height:0}
+  .deslizador{position:absolute;inset:0;background:#d6d6d2;border-radius:30px;transition:.2s;cursor:pointer}
+  .deslizador:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .switch input:checked+.deslizador{background:var(--negro)}
+  .switch input:checked+.deslizador:before{transform:translateX(20px)}
+  footer{text-align:center;color:var(--gris);font-size:12px;line-height:1.6;margin-top:26px}
+
+  /* Ventana de la contraseña */
+  .fondo-modal{display:none;position:fixed;inset:0;background:rgba(17,17,17,.45);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;z-index:10}
+  .modal{background:var(--tarjeta);border-radius:28px 28px 0 0;padding:26px 20px 30px;width:100%;max-width:480px;text-align:center}
+  .modal .etiqueta{margin-bottom:6px}
+  .modal h2{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:20px}
+  .puntos{display:flex;justify-content:center;gap:14px;margin-bottom:12px}
+  .puntito{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--negro);transition:.15s}
+  .puntito.lleno{background:var(--negro)}
+  .mensaje{min-height:20px;font-size:14px;font-weight:600;margin-bottom:14px}
+  .teclado{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto 10px}
+  .tecla{height:62px;border-radius:18px;border:0;background:var(--suave);color:var(--texto);font-size:24px;font-weight:600;cursor:pointer}
+  .tecla.chica{font-size:14px;background:transparent}
+  .tecla:active{background:#dededa}
+  .cancelar{background:none;border:0;color:var(--gris);font-size:15px;font-weight:600;padding:10px;cursor:pointer}
+  .sacudir{animation:sacudir .35s}
+  @keyframes sacudir{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+</style>
+</head>
+<body>
+<div class="contenedor">
+  <header>
+    <div>
+      <div class="marca">Cuarto Seguro</div>
+      <h1>Panel de control</h1>
+    </div>
+    <div class="reloj" id="reloj">--:--</div>
+  </header>
+
+  <div class="conexion" id="conexion"><span class="punto"></span><span id="textoConexion">Conectando…</span></div>
+
+  <div class="banner-alarma" id="bannerAlarma">
+    <div class="t">Emergencia</div>
+    <div class="g">Alarma de socorro activada</div>
+    <button onclick="enviar('alarma:0')">Apagar alarma</button>
+  </div>
+
+  <div class="grilla">
+    <div class="tarjeta">
+      <div class="etiqueta">Puerta</div>
+      <div class="valor" id="estPuerta">—</div>
+      <div class="detalle" id="detPuerta"></div>
+      <button class="boton" id="btnPuerta">Abrir</button>
+    </div>
+
+    <div class="tarjeta">
+      <div class="etiqueta">Luces</div>
+      <div class="valor" id="estLuz">—</div>
+      <div class="detalle" id="detLuz"></div>
+      <button class="boton" id="btnLuz">—</button>
+    </div>
+
+    <div class="tarjeta ancha socorro" id="btnSocorro">
+      <div class="etiqueta">Emergencia</div>
+      <div class="grande">Socorro</div>
+      <div class="detalle" id="estAlarma">Tocá para activar la alarma</div>
+    </div>
+
+    <div class="tarjeta ancha">
+      <div class="etiqueta">Router · WiFi</div>
+      <div class="valor" id="estRouter">—</div>
+      <div class="detalle" id="detRouter"></div>
+      <button class="boton" id="btnRouter">—</button>
+
+      <div class="separador"></div>
+
+      <div class="interruptor">
+        <span>Corte automático por horario</span>
+        <label class="switch"><input type="checkbox" id="chkHorario"><span class="deslizador"></span></label>
+      </div>
+      <div class="fila">
+        <label>Se apaga a las<input type="time" id="horaApagado" value="23:00"></label>
+        <label>Se prende a las<input type="time" id="horaPrendido" value="07:00"></label>
+      </div>
+      <button class="boton claro" onclick="guardarHorario()">Guardar horario</button>
+    </div>
+  </div>
+
+  <footer>Puerta protegida con contraseña · 3 intentos fallidos bloquean y activan la alarma<br>Conexión mediante broker MQTT</footer>
+</div>
+
+<!-- Ventana para la contraseña -->
+<div class="fondo-modal" id="modal">
+  <div class="modal">
+    <div class="etiqueta">Puerta</div>
+    <h2>Ingresá la contraseña</h2>
+    <div class="puntos" id="puntos"></div>
+    <div class="mensaje" id="mensaje"></div>
+    <div class="teclado" id="teclado"></div>
+    <button class="cancelar" onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+// ===== CONFIGURACIÓN: tiene que ser igual que en el ESP32 =====
+const BROKER = 'wss://broker.emqx.io:8084/mqtt';
+const TEMA = 'cuartoseguro/4deeb0';
+// ==============================================================
+const LARGO_CLAVE = 6;
+let estado = {};
+let clave = '';
+let finApertura = 0;
+let brokerOk = false, cuartoOk = false;
+
+let cliente = null;
+let sinLibreria = false;
+
+// La librería MQTT se baja de internet. Si un servidor falla, prueba con el siguiente.
+const LIBRERIAS = [
+  'https://unpkg.com/mqtt@5/dist/mqtt.min.js',
+  'https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js'
+];
+function cargarLibreria(i){
+  if (i >= LIBRERIAS.length){ sinLibreria = true; mostrarConexion(); return; }
+  const s = document.createElement('script');
+  s.src = LIBRERIAS[i];
+  s.onload = () => (window.mqtt ? conectar() : cargarLibreria(i + 1));
+  s.onerror = () => cargarLibreria(i + 1);
+  document.head.appendChild(s);
+}
+
+function conectar(){
+  cliente = mqtt.connect(BROKER, {clientId: 'web-' + Math.random().toString(16).slice(2, 10), reconnectPeriod: 2000});
+  cliente.on('connect', () => {
+    brokerOk = true; mostrarConexion();
+    cliente.subscribe([TEMA + '/estado', TEMA + '/respuesta', TEMA + '/online']);
+    const d = new Date();
+    enviar('hora:' + (d.getHours() * 60 + d.getMinutes()));   // por si el ESP32 no tiene la hora
+  });
+  cliente.on('close', () => { brokerOk = false; mostrarConexion(); });
+  cliente.on('message', (tema, datos) => {
+    const texto = datos.toString();
+    if (tema.endsWith('/online')){ cuartoOk = texto === '1'; mostrarConexion(); }
+    else if (tema.endsWith('/estado')){ try { pintar(JSON.parse(texto)); } catch(e){} }
+    else if (tema.endsWith('/respuesta')){ try { resultadoClave(JSON.parse(texto)); } catch(e){} }
+  });
+}
+
+function mostrarConexion(){
+  const c = document.getElementById('conexion'), t = document.getElementById('textoConexion');
+  if (sinLibreria){ t.textContent = 'Sin internet: no se pudo cargar la conexión'; c.className = 'conexion'; }
+  else if (!brokerOk){ t.textContent = 'Conectando al broker…'; c.className = 'conexion'; }
+  else if (!cuartoOk){ t.textContent = 'Cuarto desconectado'; c.className = 'conexion'; }
+  else { t.textContent = 'Cuarto conectado'; c.className = 'conexion ok'; }
+}
+
+function enviar(comando){
+  if (!brokerOk || !cliente) return;
+  cliente.publish(TEMA + '/comandos', comando);
+}
+
+// ---------- Contraseña ----------
+function dibujarPuntos(){
+  const c = document.getElementById('puntos');
+  c.innerHTML = '';
+  for (let i = 0; i < LARGO_CLAVE; i++){
+    const d = document.createElement('div');
+    d.className = 'puntito' + (i < clave.length ? ' lleno' : '');
+    c.appendChild(d);
+  }
+}
+function armarTeclado(){
+  const t = document.getElementById('teclado');
+  ['1','2','3','4','5','6','7','8','9','','0','Borrar'].forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'tecla' + (k === 'Borrar' ? ' chica' : '');
+    b.textContent = k;
+    if (k === '') { b.style.visibility = 'hidden'; }
+    b.onclick = () => {
+      if (k === 'Borrar') clave = clave.slice(0, -1);
+      else if (clave.length < LARGO_CLAVE){
+        clave += k;
+        if (clave.length === LARGO_CLAVE) setTimeout(probarClave, 150);
+      }
+      dibujarPuntos();
+    };
+    t.appendChild(b);
+  });
+}
+function abrirModal(){
+  clave = ''; dibujarPuntos();
+  document.getElementById('mensaje').textContent = cuartoOk ? '' : 'El cuarto está desconectado';
+  document.getElementById('modal').style.display = 'flex';
+}
+function cerrarModal(){ document.getElementById('modal').style.display = 'none'; }
+
+function probarClave(){
+  enviar('abrir:' + clave);
+  clave = ''; dibujarPuntos();
+  document.getElementById('mensaje').textContent = 'Verificando…';
+}
+function resultadoClave(r){
+  const msg = document.getElementById('mensaje');
+  if (r.ok){
+    cerrarModal();
+    finApertura = Date.now() + 5000;
+  } else {
+    const p = document.getElementById('puntos');
+    p.classList.add('sacudir'); setTimeout(() => p.classList.remove('sacudir'), 400);
+    if (r.bloqueado) msg.textContent = 'Bloqueado por ' + r.bloqueado + ' s. Se activó la alarma.';
+    else msg.textContent = 'Contraseña incorrecta. Quedan ' + r.quedan + ' intento(s).';
+  }
+}
+
+// ---------- Mostrar el estado ----------
+function pintar(e){
+  estado = e;
+  document.getElementById('reloj').textContent = e.hora;
+
+  // Puerta
+  const bp = document.getElementById('btnPuerta');
+  if (e.puerta){
+    const seg = Math.max(0, Math.ceil((finApertura - Date.now()) / 1000));
+    document.getElementById('estPuerta').textContent = 'Abierta';
+    document.getElementById('detPuerta').textContent = seg > 0 ? 'Se cierra en ' + seg + ' s' : 'Se cierra sola';
+    bp.textContent = 'Cerrar ya'; bp.className = 'boton claro';
+  } else {
+    document.getElementById('estPuerta').textContent = 'Cerrada';
+    document.getElementById('detPuerta').textContent = 'Con llave';
+    bp.textContent = 'Abrir'; bp.className = 'boton';
+  }
+
+  // Luces
+  const bl = document.getElementById('btnLuz');
+  document.getElementById('estLuz').textContent = e.luz ? 'Prendidas' : 'Apagadas';
+  document.getElementById('detLuz').textContent = e.luz ? 'Luz encendida' : 'Luz apagada';
+  bl.textContent = e.luz ? 'Apagar' : 'Prender';
+  bl.className = 'boton' + (e.luz ? ' claro' : '');
+
+  // Alarma
+  document.getElementById('bannerAlarma').style.display = e.alarma ? 'block' : 'none';
+  document.getElementById('estAlarma').textContent = e.alarma ? 'Sonando. Tocá para apagar.' : 'Tocá para activar la alarma';
+
+  // Router
+  const br = document.getElementById('btnRouter');
+  document.getElementById('estRouter').textContent = e.router ? 'Conectado' : 'Desconectado';
+  document.getElementById('detRouter').textContent = e.horarioActivo ? 'Se corta de ' + e.apagado + ' a ' + e.prendido : 'Sin horario programado';
+  br.textContent = e.router ? 'Cortar WiFi' : 'Prender WiFi';
+  br.className = 'boton' + (e.router ? '' : ' claro');
+
+  const a = document.activeElement;
+  if (a.id !== 'horaApagado' && a.id !== 'horaPrendido'){
+    document.getElementById('horaApagado').value = e.apagado;
+    document.getElementById('horaPrendido').value = e.prendido;
+  }
+  document.getElementById('chkHorario').checked = e.horarioActivo;
+}
+
+function guardarHorario(){
+  const ap = document.getElementById('horaApagado').value;
+  const pr = document.getElementById('horaPrendido').value;
+  const ac = document.getElementById('chkHorario').checked ? 1 : 0;
+  enviar('horario:' + ap + ',' + pr + ',' + ac);
+}
+
+document.getElementById('btnPuerta').onclick = () => estado.puerta ? enviar('cerrar') : abrirModal();
+document.getElementById('btnLuz').onclick = () => enviar('luz:' + (estado.luz ? 0 : 1));
+document.getElementById('btnRouter').onclick = () => enviar('router:' + (estado.router ? 0 : 1));
+document.getElementById('btnSocorro').onclick = () => enviar('alarma:' + (estado.alarma ? 0 : 1));
+document.getElementById('chkHorario').onchange = guardarHorario;
+
+armarTeclado(); dibujarPuntos();
+pintar({puerta:false,luz:false,alarma:false,router:true,horarioActivo:false,apagado:'23:00',prendido:'07:00',hora:'--:--'});
+cargarLibreria(0);
+setInterval(() => { if (estado.puerta) pintar(estado); }, 500);
+</script>
+</body>
+</html>
